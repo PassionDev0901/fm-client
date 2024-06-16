@@ -1,125 +1,180 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        primarySwatch: createMaterialColor(Colors.green.shade50), // Adjust the primarySwatch as needed
+        colorScheme: ColorScheme.fromSwatch(primarySwatch: createMaterialColor(Colors.green.shade50)), // Use primarySwatch directly for ColorScheme
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Fais Mart'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
+class MyHomePage extends StatelessWidget {
+  final TextEditingController _searchController = TextEditingController();
   final String title;
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+  MyHomePage({Key? key, required this.title}) : super(key: key);
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  // Method to show a dialog
+  void _showDialog(BuildContext context, String title, String content) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('OK'), // Use const for Text widgets
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  // Validation logic method
+  void _validateInput(BuildContext context) {
+    String inputText = _searchController.text.trim(); // Retrieve the text input
+    if (inputText.isEmpty) {
+      _showDialog(context, 'Validation Error', 'Input cannot be empty.');
+    } else if (inputText.length < 3) {
+      _showDialog(context, 'Validation Error', 'Input must be at least 3 characters long.');
+    } else {
+      _showDialog(context, 'Validation Success', 'Input is valid: $inputText');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    // Calculate screen height and width to make layout responsive
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+      body: Stack(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(screenWidth * 0.05), // 5% padding from all sides
+            child: Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 20.0),
+                    child:Image.asset(
+                    'assets/logo.png',
+                    height: screenHeight * 0.2, // 20% of screen height
+                    fit: BoxFit.contain,
+                  )),
+                  SizedBox(height: screenHeight * 0.1), // 10% of screen height
+                  TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search Customer', // Placeholder text for the input
+                      border: OutlineInputBorder(),
+                      labelText: 'Search', // Label text for the input
+                    ),
+                    textAlign: TextAlign.center, // Center align the text input
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: screenHeight * 0.1), // 10% of screen height
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'TR REF',
+                      border: OutlineInputBorder(),
+                      enabled: false,
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.05), // 5% of screen height
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Customer ID',
+                      border: OutlineInputBorder(),
+                      enabled: false,
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.1), 
+                  ElevatedButton(
+                    onPressed: () {
+                      _validateInput(context); // Call method to validate input
+                    },
+                    style: ButtonStyle(
+                      padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                        EdgeInsets.symmetric(vertical: 10.0), // Adjust padding as needed
+                      ),
+                       backgroundColor: MaterialStateProperty.all<Color>(Colors.green.shade400)
+                    ),
+                    child: const Text(
+                      'SEARCH',
+                      style: TextStyle(color: Colors.white), // Change text color here
+                    ),
+                  ),
+                ],
+              ),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          // Positioned widget to place the admin button at the left bottom
+          Positioned(
+            left: 0,
+            bottom: 0,
+            child: Container(
+              width: screenWidth / 4, // 1/4 of screen width
+              decoration: BoxDecoration(
+                color: Colors.green[500], // Example color
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(32.0), // Adjust the radius as needed
+                ),
+              ),
+              child: TextButton(
+                onPressed: () {
+                  // Add functionality for the admin button here
+                },
+                child: const Text(
+                  'Admin',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+}
+
+// Function to create a custom MaterialColor
+MaterialColor createMaterialColor(Color color) {
+  List<double> strengths = <double>[.05];
+  Map<int, Color> swatch = {};
+  final int r = color.red, g = color.green, b = color.blue;
+
+  for (int i = 1; i < 10; i++) {
+    strengths.add(0.1 * i);
+  }
+  for (var strength in strengths) {
+    final double ds = 0.5 - strength;
+    swatch[(strength * 1000).round()] = Color.fromRGBO(
+      r + ((ds < 0 ? r : (255 - r)) * ds).round(),
+      g + ((ds < 0 ? g : (255 - g)) * ds).round(),
+      b + ((ds < 0 ? b : (255 - b)) * ds).round(),
+      1,
+    );
+  }
+  return MaterialColor(color.value, swatch);
 }
