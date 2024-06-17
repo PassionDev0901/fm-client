@@ -1,7 +1,8 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
-
+import 'admin_screen.dart';
+import 'database_helper.dart';
 void main() {
   runApp(MyApp());
 }
@@ -12,7 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: createMaterialColor(Colors.green.shade50), // Adjust the primarySwatch as needed
+        primarySwatch: createMaterialColor(Colors.blue), // Adjust the primarySwatch as needed
         colorScheme: ColorScheme.fromSwatch(primarySwatch: createMaterialColor(Colors.green.shade50)), // Use primarySwatch directly for ColorScheme
         useMaterial3: true,
       ),
@@ -23,6 +24,9 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatelessWidget {
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _trefController = TextEditingController();
+  final TextEditingController _customerController = TextEditingController();
+
   final String title;
 
   MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -48,15 +52,30 @@ class MyHomePage extends StatelessWidget {
     );
   }
 
-  // Validation logic method
-  void _validateInput(BuildContext context) {
-    String inputText = _searchController.text.trim(); // Retrieve the text input
+  void _validateInput(BuildContext context) async {
+    String inputText = _searchController.text.trim();
+
     if (inputText.isEmpty) {
       _showDialog(context, 'Validation Error', 'Input cannot be empty.');
-    } else if (inputText.length < 3) {
-      _showDialog(context, 'Validation Error', 'Input must be at least 3 characters long.');
+      return;
+    }
+
+    // Perform database search
+    DatabaseHelper dbHelper = DatabaseHelper.instance;
+    Map<String, dynamic>? result = await dbHelper.search(inputText);
+
+    if (result != null) {
+      // Show dialog with prompt message from database result
+      _showDialog(context, 'Prompt', '${result['prompt']}');
+
+      // Update TR REF and Customer ID inputs
+      _searchController.text = inputText; // Update search input (optional)
+      // Set TR REF and Customer ID inputs from database
+      // Assuming your input fields are TextFields with controllers
+      _trefController.text = result['tr'];
+      _customerController.text = result['customer'];
     } else {
-      _showDialog(context, 'Validation Success', 'Input is valid: $inputText');
+      _showDialog(context, 'Search Result', 'No record found for TR REF: $inputText');
     }
   }
 
@@ -83,18 +102,26 @@ class MyHomePage extends StatelessWidget {
                     fit: BoxFit.contain,
                   )),
                   SizedBox(height: screenHeight * 0.1), // 10% of screen height
-                  TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Search Customer', // Placeholder text for the input
-                      border: OutlineInputBorder(),
-                      labelText: 'Search', // Label text for the input
-                    ),
-                    textAlign: TextAlign.center, // Center align the text input
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    TextField(
+                autofocus: true,
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search Customer',
+                  border: OutlineInputBorder(),
+                  labelText: 'Search',
+                  // Use focusedBorder to customize the border when TextField is focused
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blue),
                   ),
+                ),
+                cursorColor: Colors.blue, // Set cursor color
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+
                   SizedBox(height: screenHeight * 0.1), // 10% of screen height
                   TextField(
+                    controller: _trefController,
                     decoration: InputDecoration(
                       hintText: 'TR REF',
                       border: OutlineInputBorder(),
@@ -103,6 +130,7 @@ class MyHomePage extends StatelessWidget {
                   ),
                   SizedBox(height: screenHeight * 0.05), // 5% of screen height
                   TextField(
+                    controller: _customerController,
                     decoration: InputDecoration(
                       hintText: 'Customer ID',
                       border: OutlineInputBorder(),
@@ -143,7 +171,11 @@ class MyHomePage extends StatelessWidget {
               ),
               child: TextButton(
                 onPressed: () {
-                  // Add functionality for the admin button here
+                    // Navigate to admin screen when button is pressed
+                  Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AdminScreen()),
+                );
                 },
                 child: const Text(
                   'Admin',
