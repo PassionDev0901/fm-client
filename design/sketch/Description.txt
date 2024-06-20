@@ -1,0 +1,13 @@
+1. Main Page : 
+You can search specific customer and see its information
+
+2. Alert Page :
+You can see prompt message of spcific customer
+
+3. Admin Page :
+You can add new customer information.
+
+4. Admin Edit Page :
+You can edit existing customer information.
+
+
